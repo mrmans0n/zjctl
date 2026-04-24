@@ -10,14 +10,18 @@ fn normalize_pane_id(id: &str) -> String {
     }
 }
 
-pub fn check_self_write(target_pane_id: &str, no_guard: bool) -> Result<(), ZjctlError> {
+pub fn check_self_write(
+    target_pane_id: &str,
+    no_guard: bool,
+    current_pane_id: Option<&str>,
+) -> Result<(), ZjctlError> {
     if no_guard {
         return Ok(());
     }
 
-    let self_id = match std::env::var("ZELLIJ_PANE_ID") {
-        Ok(id) => id,
-        Err(_) => return Ok(()),
+    let self_id = match current_pane_id {
+        Some(id) => id,
+        None => return Ok(()),
     };
 
     let normalized_target = normalize_pane_id(target_pane_id);

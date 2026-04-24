@@ -28,7 +28,15 @@ fn run(cli: Cli) -> Result<(), ZjctlError> {
         }
         Resource::Panes { verb } => {
             require_session(&session)?;
-            commands::panes::run(verb, &zellij, &format, cli.dry_run, cli.no_guard)
+            let current_pane_id = std::env::var("ZELLIJ_PANE_ID").ok();
+            commands::panes::run(
+                verb,
+                &zellij,
+                &format,
+                cli.dry_run,
+                cli.no_guard,
+                current_pane_id.as_deref(),
+            )
         }
     }
 }

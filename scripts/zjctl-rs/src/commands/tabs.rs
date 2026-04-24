@@ -36,8 +36,10 @@ pub fn run(
             Ok(())
         }
         TabsVerb::Focus { tab } => {
-            focus(&tab, zellij, dry_run)?;
-            emit_ok(format);
+            focus(&tab, zellij, format, dry_run)?;
+            if !dry_run {
+                emit_ok(format);
+            }
             Ok(())
         }
         TabsVerb::Open {
@@ -80,11 +82,17 @@ pub fn list(zellij: &dyn ZellijRunner) -> Result<TabsOutput, ZjctlError> {
     Ok(TabsOutput { tabs })
 }
 
-pub fn focus(target: &str, zellij: &dyn ZellijRunner, dry_run: bool) -> Result<(), ZjctlError> {
+pub fn focus(
+    target: &str,
+    zellij: &dyn ZellijRunner,
+    format: &OutputFormat,
+    dry_run: bool,
+) -> Result<(), ZjctlError> {
     let index = resolve_tab(target, zellij)?;
     let one_based = (index + 1).to_string();
 
     if dry_run {
+        emit_dry_run(&["zellij", "action", "go-to-tab", &one_based], format);
         return Ok(());
     }
 

@@ -2,6 +2,7 @@ mod common;
 
 use common::{MockZellij, MOCK_PANES_JSON, MOCK_TAB_INFO_JSON, MOCK_TAB_NAMES};
 use zjctl::commands::tabs;
+use zjctl::output::OutputFormat;
 
 #[test]
 fn tabs_list_returns_both_tabs() {
@@ -41,7 +42,7 @@ fn tabs_focus_accepts_numeric_index() {
     mock.mock_command("query-tab-names", MOCK_TAB_NAMES);
     mock.mock_command("go-to-tab", "");
 
-    let result = tabs::focus("0", &mock, false);
+    let result = tabs::focus("0", &mock, &OutputFormat::Json, false);
     assert!(result.is_ok());
 }
 
@@ -51,6 +52,18 @@ fn tabs_focus_accepts_name() {
     mock.mock_command("query-tab-names", MOCK_TAB_NAMES);
     mock.mock_command("go-to-tab", "");
 
-    let result = tabs::focus("code", &mock, false);
+    let result = tabs::focus("code", &mock, &OutputFormat::Json, false);
+    assert!(result.is_ok());
+}
+
+// === Dry-run tests ===
+
+#[test]
+fn tabs_focus_dry_run_does_not_execute() {
+    let mut mock = MockZellij::new();
+    mock.mock_command("query-tab-names", MOCK_TAB_NAMES);
+    // No go-to-tab mock — would panic if actually called
+
+    let result = tabs::focus("0", &mock, &OutputFormat::Quiet, true);
     assert!(result.is_ok());
 }

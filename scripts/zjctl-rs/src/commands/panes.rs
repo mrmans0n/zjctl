@@ -12,6 +12,7 @@ pub fn run(
     format: &OutputFormat,
     dry_run: bool,
     no_guard: bool,
+    current_pane_id: Option<&str>,
 ) -> Result<(), ZjctlError> {
     match verb {
         PanesVerb::List { tab } => {
@@ -63,18 +64,24 @@ pub fn run(
             Ok(())
         }
         PanesVerb::Write { pane, text } => {
-            write(&pane, &text, zellij, dry_run, no_guard)?;
-            emit_ok(format);
+            write(&pane, &text, zellij, format, dry_run, no_guard, current_pane_id)?;
+            if !dry_run {
+                emit_ok(format);
+            }
             Ok(())
         }
         PanesVerb::SendKeys { pane, keys } => {
-            send_keys(&pane, &keys, zellij, dry_run, no_guard)?;
-            emit_ok(format);
+            send_keys(&pane, &keys, zellij, format, dry_run, no_guard, current_pane_id)?;
+            if !dry_run {
+                emit_ok(format);
+            }
             Ok(())
         }
         PanesVerb::Focus { pane } => {
-            focus(&pane, zellij, dry_run)?;
-            emit_ok(format);
+            focus(&pane, zellij, format, dry_run)?;
+            if !dry_run {
+                emit_ok(format);
+            }
             Ok(())
         }
         PanesVerb::Open {
@@ -86,10 +93,12 @@ pub fn run(
             command,
         } => {
             let pane_id = open_pane(
-                direction, floating, name, cwd, tab_id, command, zellij, dry_run,
+                direction, floating, name, cwd, tab_id, command, zellij, format, dry_run,
             )?;
-            let result = serde_json::json!({"pane_id": pane_id});
-            emit(&result, format, |_| {});
+            if !dry_run {
+                let result = serde_json::json!({"pane_id": pane_id});
+                emit(&result, format, |_| {});
+            }
             Ok(())
         }
     }
@@ -167,13 +176,19 @@ pub fn write(
     target: &str,
     text: &str,
     zellij: &dyn ZellijRunner,
+    format: &OutputFormat,
     dry_run: bool,
     no_guard: bool,
+    current_pane_id: Option<&str>,
 ) -> Result<(), ZjctlError> {
     let pane_id = resolve_pane(target, zellij)?;
-    check_self_write(&pane_id, no_guard)?;
+    check_self_write(&pane_id, no_guard, current_pane_id)?;
 
     if dry_run {
+        emit_dry_run(
+            &["zellij", "action", "write-chars", "--pane-id", &pane_id, text],
+            format,
+        );
         return Ok(());
     }
 
@@ -185,13 +200,19 @@ pub fn send_keys(
     target: &str,
     keys: &[String],
     zellij: &dyn ZellijRunner,
+    format: &OutputFormat,
     dry_run: bool,
     no_guard: bool,
+    current_pane_id: Option<&str>,
 ) -> Result<(), ZjctlError> {
     let pane_id = resolve_pane(target, zellij)?;
-    check_self_write(&pane_id, no_guard)?;
+    check_self_write(&pane_id, no_guard, current_pane_id)?;
 
     if dry_run {
+        let mut cmd: Vec<&str> = vec!["zellij", "action", "send-keys", "--pane-id", &pane_id];
+        let key_refs: Vec<&str> = keys.iter().map(|k| k.as_str()).collect();
+        cmd.extend(&key_refs);
+        emit_dry_run(&cmd, format);
         return Ok(());
     }
 
@@ -202,10 +223,19 @@ pub fn send_keys(
     Ok(())
 }
 
-pub fn focus(target: &str, zellij: &dyn ZellijRunner, dry_run: bool) -> Result<(), ZjctlError> {
+pub fn focus(
+    target: &str,
+    zellij: &dyn ZellijRunner,
+    format: &OutputFormat,
+    dry_run: bool,
+) -> Result<(), ZjctlError> {
     let pane_id = resolve_pane(target, zellij)?;
 
     if dry_run {
+        emit_dry_run(
+            &["zellij", "action", "focus-pane-id", &pane_id],
+            format,
+        );
         return Ok(());
     }
 
@@ -222,6 +252,7 @@ pub fn open_pane(
     tab_id: Option<u32>,
     command: Vec<String>,
     zellij: &dyn ZellijRunner,
+    format: &OutputFormat,
     dry_run: bool,
 ) -> Result<String, ZjctlError> {
     let mut args: Vec<String> = vec!["new-pane".to_string()];
@@ -249,12 +280,15 @@ pub fn open_pane(
         args.extend(command);
     }
 
-    let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-
     if dry_run {
-        return Ok("dry_run".to_string());
+        let mut full_cmd: Vec<String> = vec!["zellij".to_string(), "action".to_string()];
+        full_cmd.extend(args);
+        let full_cmd_refs: Vec<&str> = full_cmd.iter().map(|s| s.as_str()).collect();
+        emit_dry_run(&full_cmd_refs, format);
+        return Ok(String::new());
     }
 
+    let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
     let output = zellij.run_action(&args_refs)?;
     let pane_id = output.trim().to_string();
     Ok(pane_id)
