@@ -1,3 +1,8 @@
+---
+name: zjctl
+description: "Use the shipped Rust zjctl CLI to inspect and safely control Zellij sessions, tabs, and panes from agents."
+---
+
 # zjctl
 
 Use the shipped Rust `zjctl` CLI to inspect and control Zellij sessions, tabs, and panes safely from agents. Prefer `zjctl` over raw `zellij action` commands when the operation is supported.
@@ -178,6 +183,82 @@ Known errors:
 Self-write block example:
 ```json
 {"error":"self_write_blocked","message":"Refusing to write to own pane (terminal_8). Use --no-guard to override.","exit_code":3,"target":"terminal_8","self":"terminal_8"}
+```
+
+## Usage patterns
+
+### Find a pane by title, run a command, read output
+
+```bash
+# 1. Find the target pane
+zjctl panes list | jq '.panes[] | select(.title == "build-runner")'
+# → {"id":"terminal_5", ...}
+
+# 2. Write a command to it
+zjctl panes write terminal_5 "cargo test --quiet"
+
+# 3. Send Enter to execute
+zjctl panes send-keys terminal_5 Enter
+
+# 4. Wait, then read output
+sleep 3
+zjctl panes read terminal_5
+# → {"pane_id":"terminal_5","content":"...test results..."}
+```
+
+### Focus a tab by name, then list its panes
+
+```bash
+# 1. List tabs to confirm the name exists
+zjctl tabs list
+# → {"tabs":[{"index":0,"name":"editor","active":true,...},{"index":1,"name":"tests",...}]}
+
+# 2. Focus the target tab
+zjctl tabs focus tests
+# → {"ok":true}
+
+# 3. List panes in that tab
+zjctl panes list --tab tests
+# → {"panes":[{"id":"terminal_3",...},{"id":"terminal_4",...}]}
+```
+
+### Open a pane, capture its ID, run a command
+
+```bash
+# 1. Open a floating pane with a working directory
+zjctl panes open --floating --name "scratch" --cwd /tmp
+# → {"pane_id":"terminal_12"}
+
+# 2. Write a command to the new pane using the returned ID
+zjctl panes write terminal_12 "ls -la"
+zjctl panes send-keys terminal_12 Enter
+```
+
+### Dry-run before writing to a non-current pane
+
+```bash
+# 1. Preview what zjctl would execute
+zjctl --dry-run panes write terminal_7 "rm -rf build/"
+# → {"dry_run":true,"command":["zellij","action","write-chars","--pane-id","terminal_7","rm -rf build/"]}
+
+# 2. If the preview looks correct, run for real
+zjctl panes write terminal_7 "rm -rf build/"
+# → {"ok":true}
+```
+
+### Handle invalid_target by relisting
+
+```bash
+# 1. Attempt to read a pane that may have been closed
+zjctl panes read terminal_99
+# stderr: {"error":"invalid_target","message":"Pane not found: terminal_99","exit_code":1}
+
+# 2. Relist panes to find the correct target — don't retry blindly
+zjctl panes list
+# → {"panes":[{"id":"terminal_0",...},{"id":"terminal_3",...}]}
+
+# 3. Use the correct ID
+zjctl panes read terminal_3
 ```
 
 ## Guardrails
