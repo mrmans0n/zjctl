@@ -58,7 +58,7 @@ impl MockZellij {
                 } else {
                     Err(ZjctlError::zellij_error(
                         &resp.output,
-                        &format!("zellij {}", full_key),
+                        format!("zellij {}", full_key),
                     ))
                 };
             }
