@@ -1,0 +1,28 @@
+[package]
+name = "zjctl"
+version = "0.1.0"
+edition = "2024"
+description = "Programmatic control bridge for Zellij panes and tabs"
+authors = ["Nacho Lopez"]
+license = "MIT"
+repository = "https://github.com/mrmans0n/zjctl"
+homepage = "https://github.com/mrmans0n/zjctl"
+readme = "README.md"
+keywords = ["zellij", "terminal", "cli", "automation"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.dist]
+formula = "zjctl"
+
+[[bin]]
+name = "zjctl"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+pretty_assertions = "1"
