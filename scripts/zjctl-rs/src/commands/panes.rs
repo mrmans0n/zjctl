@@ -64,14 +64,30 @@ pub fn run(
             Ok(())
         }
         PanesVerb::Write { pane, text } => {
-            write(&pane, &text, zellij, format, dry_run, no_guard, current_pane_id)?;
+            write(
+                &pane,
+                &text,
+                zellij,
+                format,
+                dry_run,
+                no_guard,
+                current_pane_id,
+            )?;
             if !dry_run {
                 emit_ok(format);
             }
             Ok(())
         }
         PanesVerb::SendKeys { pane, keys } => {
-            send_keys(&pane, &keys, zellij, format, dry_run, no_guard, current_pane_id)?;
+            send_keys(
+                &pane,
+                &keys,
+                zellij,
+                format,
+                dry_run,
+                no_guard,
+                current_pane_id,
+            )?;
             if !dry_run {
                 emit_ok(format);
             }
@@ -92,9 +108,17 @@ pub fn run(
             tab_id,
             command,
         } => {
-            let pane_id = open_pane(
-                direction, floating, name, cwd, tab_id, command, zellij, format, dry_run,
-            )?;
+            let pane_id = open_pane(&OpenPaneOptions {
+                direction,
+                floating,
+                name,
+                cwd,
+                tab_id,
+                command,
+                zellij,
+                format,
+                dry_run,
+            })?;
             if !dry_run {
                 let result = serde_json::json!({"pane_id": pane_id});
                 emit(&result, format, |_| {});
@@ -186,7 +210,14 @@ pub fn write(
 
     if dry_run {
         emit_dry_run(
-            &["zellij", "action", "write-chars", "--pane-id", &pane_id, text],
+            &[
+                "zellij",
+                "action",
+                "write-chars",
+                "--pane-id",
+                &pane_id,
+                text,
+            ],
             format,
         );
         return Ok(());
@@ -232,10 +263,7 @@ pub fn focus(
     let pane_id = resolve_pane(target, zellij)?;
 
     if dry_run {
-        emit_dry_run(
-            &["zellij", "action", "focus-pane-id", &pane_id],
-            format,
-        );
+        emit_dry_run(&["zellij", "action", "focus-pane-id", &pane_id], format);
         return Ok(());
     }
 
@@ -243,53 +271,54 @@ pub fn focus(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn open_pane(
-    direction: Option<String>,
-    floating: bool,
-    name: Option<String>,
-    cwd: Option<String>,
-    tab_id: Option<u32>,
-    command: Vec<String>,
-    zellij: &dyn ZellijRunner,
-    format: &OutputFormat,
-    dry_run: bool,
-) -> Result<String, ZjctlError> {
+pub struct OpenPaneOptions<'a> {
+    pub direction: Option<String>,
+    pub floating: bool,
+    pub name: Option<String>,
+    pub cwd: Option<String>,
+    pub tab_id: Option<u32>,
+    pub command: Vec<String>,
+    pub zellij: &'a dyn ZellijRunner,
+    pub format: &'a OutputFormat,
+    pub dry_run: bool,
+}
+
+pub fn open_pane(opts: &OpenPaneOptions) -> Result<String, ZjctlError> {
     let mut args: Vec<String> = vec!["new-pane".to_string()];
-    if let Some(ref d) = direction {
+    if let Some(ref d) = opts.direction {
         args.push("--direction".to_string());
         args.push(d.clone());
     }
-    if floating {
+    if opts.floating {
         args.push("--floating".to_string());
     }
-    if let Some(ref n) = name {
+    if let Some(ref n) = opts.name {
         args.push("--name".to_string());
         args.push(n.clone());
     }
-    if let Some(ref c) = cwd {
+    if let Some(ref c) = opts.cwd {
         args.push("--cwd".to_string());
         args.push(c.clone());
     }
-    if let Some(id) = tab_id {
+    if let Some(id) = opts.tab_id {
         args.push("--tab-id".to_string());
         args.push(id.to_string());
     }
-    if !command.is_empty() {
+    if !opts.command.is_empty() {
         args.push("--".to_string());
-        args.extend(command);
+        args.extend(opts.command.clone());
     }
 
-    if dry_run {
+    if opts.dry_run {
         let mut full_cmd: Vec<String> = vec!["zellij".to_string(), "action".to_string()];
         full_cmd.extend(args);
         let full_cmd_refs: Vec<&str> = full_cmd.iter().map(|s| s.as_str()).collect();
-        emit_dry_run(&full_cmd_refs, format);
+        emit_dry_run(&full_cmd_refs, opts.format);
         return Ok(String::new());
     }
 
     let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-    let output = zellij.run_action(&args_refs)?;
+    let output = opts.zellij.run_action(&args_refs)?;
     let pane_id = output.trim().to_string();
     Ok(pane_id)
 }

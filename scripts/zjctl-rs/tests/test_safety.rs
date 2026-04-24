@@ -1,5 +1,3 @@
-mod common;
-
 use zjctl::safety::check_self_write;
 
 #[test]

@@ -11,7 +11,7 @@ pub fn run(
 ) -> Result<(), ZjctlError> {
     match verb {
         SessionsVerb::List => {
-            let output = list(zellij, format)?;
+            let output = list(zellij)?;
             emit(&output, format, |o| {
                 for session in &o.sessions {
                     println!("{}", session.name);
@@ -22,10 +22,7 @@ pub fn run(
     }
 }
 
-pub fn list(
-    zellij: &dyn ZellijRunner,
-    _format: &OutputFormat,
-) -> Result<SessionsOutput, ZjctlError> {
+pub fn list(zellij: &dyn ZellijRunner) -> Result<SessionsOutput, ZjctlError> {
     let raw = zellij.run_toplevel(&["list-sessions", "-n", "-s"])?;
 
     let sessions: Vec<Session> = raw

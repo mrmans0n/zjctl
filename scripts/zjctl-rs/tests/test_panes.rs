@@ -1,7 +1,7 @@
 mod common;
 
 use common::{MockZellij, MOCK_PANES_JSON, MOCK_TAB_NAMES};
-use zjctl::commands::panes;
+use zjctl::commands::panes::{self, OpenPaneOptions};
 use zjctl::output::OutputFormat;
 
 #[test]
@@ -83,7 +83,15 @@ fn panes_write_succeeds() {
     mock.mock_command("list-panes --json --all", MOCK_PANES_JSON);
     mock.mock_command("write-chars", "");
 
-    let result = panes::write("terminal_0", "hello", &mock, &OutputFormat::Json, false, false, None);
+    let result = panes::write(
+        "terminal_0",
+        "hello",
+        &mock,
+        &OutputFormat::Json,
+        false,
+        false,
+        None,
+    );
     assert!(result.is_ok());
 }
 
@@ -120,9 +128,18 @@ fn panes_open_returns_pane_id() {
     let mut mock = MockZellij::new();
     mock.mock_command("new-pane", "terminal_12");
 
-    let result =
-        panes::open_pane(None, false, None, None, None, vec![], &mock, &OutputFormat::Json, false)
-            .unwrap();
+    let result = panes::open_pane(&OpenPaneOptions {
+        direction: None,
+        floating: false,
+        name: None,
+        cwd: None,
+        tab_id: None,
+        command: vec![],
+        zellij: &mock,
+        format: &OutputFormat::Json,
+        dry_run: false,
+    })
+    .unwrap();
     assert_eq!(result, "terminal_12");
 }
 
@@ -179,17 +196,17 @@ fn panes_open_dry_run_does_not_execute() {
     let mock = MockZellij::new();
     // No mocks needed — dry-run should not call zellij
 
-    let result = panes::open_pane(
-        None,
-        true,
-        Some("test".to_string()),
-        None,
-        None,
-        vec![],
-        &mock,
-        &OutputFormat::Quiet,
-        true,
-    );
+    let result = panes::open_pane(&OpenPaneOptions {
+        direction: None,
+        floating: true,
+        name: Some("test".to_string()),
+        cwd: None,
+        tab_id: None,
+        command: vec![],
+        zellij: &mock,
+        format: &OutputFormat::Quiet,
+        dry_run: true,
+    });
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), "");
 }

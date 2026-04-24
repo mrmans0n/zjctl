@@ -10,9 +10,12 @@ pub enum OutputFormat {
 
 pub fn emit<T: Serialize>(value: &T, format: &OutputFormat, table_fn: impl FnOnce(&T)) {
     match format {
-        OutputFormat::Json => {
-            println!("{}", serde_json::to_string(value).unwrap());
-        }
+        OutputFormat::Json => match serde_json::to_string(value) {
+            Ok(json) => println!("{json}"),
+            Err(e) => {
+                eprintln!("{{\"error\":{{\"code\":\"serialization_failed\",\"message\":\"{e}\"}}}}")
+            }
+        },
         OutputFormat::Table => table_fn(value),
         OutputFormat::Quiet => {}
     }
@@ -27,7 +30,10 @@ pub fn emit_dry_run(command: &[&str], format: &OutputFormat) {
         "dry_run": true,
         "command": command,
     });
-    emit(&val, format, |v| {
-        println!("{}", serde_json::to_string_pretty(v).unwrap());
+    emit(&val, format, |v| match serde_json::to_string_pretty(v) {
+        Ok(json) => println!("{json}"),
+        Err(e) => {
+            eprintln!("{{\"error\":{{\"code\":\"serialization_failed\",\"message\":\"{e}\"}}}}")
+        }
     });
 }
