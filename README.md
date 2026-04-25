@@ -31,7 +31,9 @@ The current control surface includes:
 AI agents running in one pane are normally blind to the rest of a Zellij session.
 `zjctl` aims to provide a stable local interface for cross-pane observation and control without requiring MCP.
 
-## Installation
+## Install the CLI
+
+Install `zjctl` before installing the agent skill. The skill shells out to this binary.
 
 ### Homebrew (recommended)
 
@@ -49,54 +51,77 @@ Download the archive for your platform from the [GitHub Releases](https://github
 cargo install --path .
 ```
 
-## Development
-
-The Rust crate lives at the repository root, using standard Cargo layout:
-
-- `src/` contains the library and binary source.
-- `tests/` contains integration tests.
-- `skills/` contains the optional agent skill package.
+Verify the install:
 
 ```bash
-cargo fmt --all
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-features
-cargo run -- panes list
+zjctl --help
 ```
 
-For a local install from a checkout:
+## Install the Agent Skill
+
+The packaged skill lives at `skills/dist/zjctl.skill`. It is a zip archive that expands to `zjctl/SKILL.md`.
+
+Install the CLI first, then install the skill into the directory used by your harness.
+The commands below assume you are running them from this repository root; when installing into another project, replace `skills/dist/zjctl.skill` with the archive's absolute path.
+
+### Claude Code
+
+Claude Code loads skills from `~/.claude/skills/<skill-name>/SKILL.md` for personal use and `.claude/skills/<skill-name>/SKILL.md` for project use.
+
+Personal install:
 
 ```bash
-cargo install --path .
+mkdir -p ~/.claude/skills
+unzip -o skills/dist/zjctl.skill -d ~/.claude/skills
 ```
 
-## Release
+Project install:
 
-Releases are automated through GitHub Actions using [cargo-dist](https://github.com/axodotdev/cargo-dist).
+```bash
+mkdir -p .claude/skills
+unzip -o skills/dist/zjctl.skill -d .claude/skills
+git add .claude/skills/zjctl/SKILL.md
+```
 
-### Release checklist
+### Codex
 
-1. **Before tagging:**
-   - Ensure `CHANGELOG.md` is updated with the new version
-   - Ensure version in `Cargo.toml` matches the tag you will push
-   - Run `cargo fmt --all -- --check`
-   - Run `cargo clippy --all-targets --all-features -- -D warnings`
-   - Run `cargo test --all-features`
-   - Run `cargo build --release`
-   - Verify `dist plan` output looks correct
-   - Follow the full [release preflight checklist](docs/RELEASE-PREFLIGHT.md)
+Codex loads user skills from `$CODEX_HOME/skills`; when `CODEX_HOME` is unset, use `~/.codex/skills`.
 
-2. **Create and push the tag:**
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
+```bash
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$CODEX_HOME/skills"
+unzip -o skills/dist/zjctl.skill -d "$CODEX_HOME/skills"
+```
 
-3. **Wait for CI:**
-   - The [Release workflow](.github/workflows/release.yml) will build binaries for all platforms
-   - It will create a GitHub Release and publish the Homebrew formula to [mrmans0n/homebrew-tap](https://github.com/mrmans0n/homebrew-tap)
+For a repository-shared Codex setup, commit the skill source under the target repo and reference it from `AGENTS.md` so the harness advertises it to agents:
 
-### Prerequisites
+```bash
+mkdir -p skills
+unzip -o skills/dist/zjctl.skill -d skills
+git add skills/zjctl/SKILL.md AGENTS.md
+```
 
-- The GitHub repository must have a `HOMEBREW_TAP_TOKEN` secret configured with a personal access token that has `repo` and `workflow` scopes for `mrmans0n/homebrew-tap`.
-- The `mrmans0n/homebrew-tap` repository must exist and be accessible.
+### Cursor
+
+Cursor loads skills from `~/.cursor/skills/<skill-name>/SKILL.md` for personal use and `.cursor/skills/<skill-name>/SKILL.md` for project use.
+
+Personal install:
+
+```bash
+mkdir -p ~/.cursor/skills
+unzip -o skills/dist/zjctl.skill -d ~/.cursor/skills
+```
+
+Project install:
+
+```bash
+mkdir -p .cursor/skills
+unzip -o skills/dist/zjctl.skill -d .cursor/skills
+git add .cursor/skills/zjctl/SKILL.md
+```
+
+## Documentation
+
+- [Developing](DEVELOPING.md)
+- [Releasing](RELEASING.md)
+- [Release preflight checklist](docs/RELEASE-PREFLIGHT.md)
