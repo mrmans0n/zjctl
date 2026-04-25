@@ -48,7 +48,7 @@ Download the archive for your platform from the [GitHub Releases](https://github
 ### From source
 
 ```bash
-cargo install --path scripts/zjctl-rs
+cargo install --path .
 ```
 
 Verify the install:

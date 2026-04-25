@@ -1,4 +1,9 @@
+use assert_cmd::Command;
 use std::fs;
+
+fn zjctl() -> Command {
+    Command::cargo_bin("zjctl").unwrap()
+}
 
 #[test]
 fn readme_documents_skill_installation_for_major_harnesses() {
@@ -24,6 +29,10 @@ fn readme_documents_skill_installation_for_major_harnesses() {
         !readme.contains("unzip -o skills/dist/zjctl.skill -d ~/.claude/skills"),
         "Claude Code skill installation should use the plugin marketplace"
     );
+    assert!(
+        !readme.contains("cargo install --path scripts/zjctl-rs"),
+        "source installation should target the root crate shipped by releases"
+    );
 }
 
 #[test]
@@ -44,6 +53,51 @@ fn operational_guides_are_split_out_of_readme() {
     assert!(developing.contains("cargo clippy --all-targets --all-features -- -D warnings"));
     assert!(releasing.contains("# Releasing"));
     assert!(releasing.contains("HOMEBREW_TAP_TOKEN"));
+}
+
+#[test]
+fn documented_control_surface_matches_cli_help() {
+    let readme = read_doc("README.md");
+
+    for command in [
+        "zjctl sessions list",
+        "zjctl panes list",
+        "zjctl tabs list",
+        "zjctl panes read <pane>",
+        "zjctl panes write <pane> <text>",
+        "zjctl panes send-keys <pane> <keys...>",
+        "zjctl panes focus <pane>",
+        "zjctl panes open [options] [-- COMMAND...]",
+        "zjctl tabs focus <tab>",
+        "zjctl tabs open [options] [-- COMMAND...]",
+    ] {
+        assert!(
+            readme.contains(command),
+            "README.md is missing documented command: {command}"
+        );
+    }
+
+    for args in [
+        &["sessions", "list", "--help"][..],
+        &["panes", "list", "--help"][..],
+        &["tabs", "list", "--help"][..],
+        &["panes", "read", "--help"][..],
+        &["panes", "write", "--help"][..],
+        &["panes", "send-keys", "--help"][..],
+        &["panes", "focus", "--help"][..],
+        &["panes", "open", "--help"][..],
+        &["tabs", "focus", "--help"][..],
+        &["tabs", "open", "--help"][..],
+    ] {
+        zjctl().args(args).assert().success();
+    }
+
+    for stale_command in ["zjctl read --pane", "zjctl write --pane"] {
+        assert!(
+            !readme.contains(stale_command),
+            "README.md should not document stale top-level command: {stale_command}"
+        );
+    }
 }
 
 fn read_doc(path: &str) -> String {
