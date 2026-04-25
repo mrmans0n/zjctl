@@ -1,0 +1,11 @@
+{
+  "name": "zjctl",
+  "description": "JSON-first CLI wrapper for Zellij. Skills for inspecting and safely controlling sessions, tabs, and panes from AI agents.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Nacho L\u00f3pez",
+    "url": "https://nlopez.io"
+  },
+  "repository": "https://github.com/mrmans0n/zjctl",
+  "license": "MIT"
+}

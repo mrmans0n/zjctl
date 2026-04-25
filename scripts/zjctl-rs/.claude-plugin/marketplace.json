@@ -1,0 +1,12 @@
+{
+  "name": "zjctl",
+  "owner": {
+    "name": "Nacho Lopez"
+  },
+  "plugins": [
+    {
+      "name": "zjctl",
+      "source": "./"
+    }
+  ]
+}
