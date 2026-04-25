@@ -31,7 +31,7 @@ Before using `zjctl` in a fresh session:
    ```
 2. If not on `$PATH`, install it from the [zjctl repository](https://github.com/mrmans0n/zjctl):
    ```bash
-   cargo install --git https://github.com/mrmans0n/zjctl --path scripts/zjctl-rs
+   cargo install --git https://github.com/mrmans0n/zjctl
    ```
 4. Do not assume old flags or commands still exist — verify against `--help` output.
 
