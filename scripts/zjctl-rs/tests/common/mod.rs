@@ -50,7 +50,7 @@ impl MockZellij {
             };
         }
 
-        // Try individual args as keys (matches bash mock behavior)
+        // Try individual args as keys.
         for arg in args {
             if let Some(resp) = self.fixtures.get(*arg) {
                 return if resp.exit_code == 0 {

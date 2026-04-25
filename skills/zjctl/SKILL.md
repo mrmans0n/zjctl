@@ -19,7 +19,7 @@ Do not use this skill to:
 - invent unsupported CLI flags — check `--help` first
 - bypass safety guards casually — `--no-guard` requires intentional use
 - use raw `zellij action` when `zjctl` supports the operation
-- rely on the legacy bash `zjctl` — the Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical
+- rely on any shell-script implementation — the Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical
 
 ## First checks, always
 
@@ -267,5 +267,5 @@ zjctl panes read terminal_3
 - Always verify `--help` output in a fresh session before using commands.
 - If an operation is not supported by `zjctl`, say so plainly and consider raw `zellij action` only as a last resort.
 - Treat `--no-guard` as a deliberate override, not a default workaround.
-- The Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical. The legacy bash `zjctl` under `scripts/zjctl/` is historical and should not be relied upon.
+- The Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical.
 - When updating this skill, cross-check against the source files listed in "First checks, always".
