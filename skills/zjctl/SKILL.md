@@ -29,11 +29,14 @@ Before using `zjctl` in a fresh session:
    ```bash
    zjctl --help
    ```
-2. If not on `$PATH`, install it from the [zjctl repository](https://github.com/mrmans0n/zjctl):
+2. If not on `$PATH`, install the canonical implementation from the [zjctl repository](https://github.com/mrmans0n/zjctl):
    ```bash
-   cargo install --git https://github.com/mrmans0n/zjctl
+   tmpdir="$(mktemp -d)"
+   git clone https://github.com/mrmans0n/zjctl "$tmpdir/zjctl"
+   cargo install --path "$tmpdir/zjctl/scripts/zjctl-rs"
+   rm -rf "$tmpdir"
    ```
-4. Do not assume old flags or commands still exist — verify against `--help` output.
+3. Do not assume old flags or commands still exist — verify against `--help` output.
 
 If updating this skill, verify against source files:
 - `src/cli.rs` — command and flag surface
