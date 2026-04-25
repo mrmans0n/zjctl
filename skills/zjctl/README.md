@@ -17,7 +17,7 @@ Provides a structured interface for AI agents to interact with Zellij terminal m
 Build and install the binary to Cargo's bin directory:
 
 ```bash
-cargo install --path /Volumes/Ambrosio/clawd/scripts/zjctl-rs
+cargo install --path scripts/zjctl-rs
 ```
 
 Verify the install:
@@ -32,8 +32,8 @@ zjctl --help
 If you prefer not to use `cargo install`:
 
 ```bash
-cargo build --release --manifest-path /Volumes/Ambrosio/clawd/scripts/zjctl-rs/Cargo.toml
-ln -sf /Volumes/Ambrosio/clawd/scripts/zjctl-rs/target/release/zjctl /usr/local/bin/zjctl
+cargo build --release --manifest-path scripts/zjctl-rs/Cargo.toml
+ln -sf "$(pwd)/scripts/zjctl-rs/target/release/zjctl" /usr/local/bin/zjctl
 ```
 
 ## Package the Skill
@@ -43,14 +43,14 @@ The skill is distributed as a `.skill` archive (zip containing `zjctl/SKILL.md`)
 To rebuild the archive after editing `SKILL.md`:
 
 ```bash
-cd /Volumes/Ambrosio/clawd/skills
+cd /path/to/zjctl/skills
 zip -r dist/zjctl.skill zjctl/SKILL.md
 ```
 
 Verify:
 
 ```bash
-unzip -l /Volumes/Ambrosio/clawd/skills/dist/zjctl.skill
+unzip -l /path/to/zjctl/skills/dist/zjctl.skill
 # Should show: zjctl/SKILL.md
 ```
 
@@ -59,7 +59,7 @@ unzip -l /Volumes/Ambrosio/clawd/skills/dist/zjctl.skill
 ### Option A: Unzip the archive
 
 ```bash
-cp /Volumes/Ambrosio/clawd/skills/dist/zjctl.skill /path/to/target-repo/skills/
+cp /path/to/zjctl/skills/dist/zjctl.skill /path/to/target-repo/skills/
 cd /path/to/target-repo/skills
 unzip zjctl.skill
 ```
@@ -71,7 +71,7 @@ This creates `skills/zjctl/SKILL.md` in the target repo.
 For repos on the same machine:
 
 ```bash
-ln -s /Volumes/Ambrosio/clawd/skills/zjctl /path/to/target-repo/skills/zjctl
+ln -s /path/to/zjctl/skills/zjctl /path/to/target-repo/skills/zjctl
 ```
 
 ## Agent Discovery
@@ -153,7 +153,7 @@ Expected: `content` field includes `zjctl-skill-ok`.
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `zjctl: command not found` | Binary not on `$PATH` | Run `cargo install --path /Volumes/Ambrosio/clawd/scripts/zjctl-rs` |
+| `zjctl: command not found` | Binary not on `$PATH` | Run `cargo install --path scripts/zjctl-rs` from the repository root |
 | `not_in_session` (exit 4) | No Zellij session detected | Run from inside a Zellij session, or use `--session <name>` |
 | `self_write_blocked` (exit 3) | Targeting your own pane | Pick a different pane, or use `--no-guard` if intentional |
 | `invalid_target` (exit 1) | Pane/tab ID doesn't exist | Run `zjctl panes list` to find valid IDs |

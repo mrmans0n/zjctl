@@ -19,7 +19,7 @@ Do not use this skill to:
 - invent unsupported CLI flags — check `--help` first
 - bypass safety guards casually — `--no-guard` requires intentional use
 - use raw `zellij action` when `zjctl` supports the operation
-- rely on any shell-script implementation — the Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical
+- assume another implementation exists — the Rust implementation in this repository is canonical
 
 ## First checks, always
 
@@ -29,13 +29,9 @@ Before using `zjctl` in a fresh session:
    ```bash
    zjctl --help
    ```
-2. If not on `$PATH`, use the release binary:
+2. If not on `$PATH`, install it from the [zjctl repository](https://github.com/mrmans0n/zjctl):
    ```bash
-   /Volumes/Ambrosio/clawd/scripts/zjctl-rs/target/release/zjctl --help
-   ```
-3. If the binary is not built, build and run:
-   ```bash
-   cargo run --manifest-path /Volumes/Ambrosio/clawd/scripts/zjctl-rs/Cargo.toml -- --help
+   cargo install --git https://github.com/mrmans0n/zjctl
    ```
 4. Do not assume old flags or commands still exist — verify against `--help` output.
 
@@ -267,5 +263,5 @@ zjctl panes read terminal_3
 - Always verify `--help` output in a fresh session before using commands.
 - If an operation is not supported by `zjctl`, say so plainly and consider raw `zellij action` only as a last resort.
 - Treat `--no-guard` as a deliberate override, not a default workaround.
-- The Rust implementation at `/Volumes/Ambrosio/clawd/scripts/zjctl-rs/` is canonical.
+- The Rust implementation in this repository is canonical.
 - When updating this skill, cross-check against the source files listed in "First checks, always".
