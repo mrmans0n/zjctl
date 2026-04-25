@@ -133,7 +133,7 @@ fn open(
 
     zellij.run_action(&args_refs)?;
 
-    // Re-query to find the new tab ID (same as bash)
+    // Re-query to find the new tab ID.
     let panes_raw = zellij.run_action(&["list-panes", "--json", "--all"])?;
     let panes: Vec<ZellijPaneInfo> = serde_json::from_str(&panes_raw)
         .map_err(|e| ZjctlError::parse_error(format!("Failed to parse panes: {}", e)))?;
