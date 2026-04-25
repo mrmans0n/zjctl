@@ -29,13 +29,9 @@ Before using `zjctl` in a fresh session:
    ```bash
    zjctl --help
    ```
-2. If not on `$PATH`, use the release binary:
+2. If not on `$PATH`, install it from the [zjctl repository](https://github.com/mrmans0n/zjctl):
    ```bash
-   scripts/zjctl-rs/target/release/zjctl --help
-   ```
-3. If the binary is not built, build and run:
-   ```bash
-   cargo run --manifest-path scripts/zjctl-rs/Cargo.toml -- --help
+   cargo install --git https://github.com/mrmans0n/zjctl --path scripts/zjctl-rs
    ```
 4. Do not assume old flags or commands still exist — verify against `--help` output.
 
