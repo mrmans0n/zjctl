@@ -9,13 +9,21 @@ fn readme_documents_skill_installation_for_major_harnesses() {
         "### Claude Code",
         "### Codex",
         "### Cursor",
-        "skills/dist/zjctl.skill",
+        "/plugin marketplace add mrmans0n/zjctl",
+        "/plugin install zjctl@mrmans0n-zjctl",
+        "npx skills add mrmans0n/zjctl --skill zjctl --agent codex",
+        "npx skills add mrmans0n/zjctl --skill zjctl --agent cursor",
     ] {
         assert!(
             readme.contains(section),
             "README.md is missing required documentation: {section}"
         );
     }
+
+    assert!(
+        !readme.contains("unzip -o skills/dist/zjctl.skill -d ~/.claude/skills"),
+        "Claude Code skill installation should use the plugin marketplace"
+    );
 }
 
 #[test]

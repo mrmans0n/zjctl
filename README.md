@@ -48,7 +48,7 @@ Download the archive for your platform from the [GitHub Releases](https://github
 ### From source
 
 ```bash
-cargo install --path .
+cargo install --path scripts/zjctl-rs
 ```
 
 Verify the install:
@@ -59,65 +59,50 @@ zjctl --help
 
 ## Install the Agent Skill
 
-The packaged skill lives at `skills/dist/zjctl.skill`. It is a zip archive that expands to `zjctl/SKILL.md`.
-
-Install the CLI first, then install the skill into the directory used by your harness.
-The commands below assume you are running them from this repository root; when installing into another project, replace `skills/dist/zjctl.skill` with the archive's absolute path.
+The skill source lives at `skills/zjctl/SKILL.md`.
+Install the CLI first, then install the skill through the package manager used by your harness.
 
 ### Claude Code
 
-Claude Code loads skills from `~/.claude/skills/<skill-name>/SKILL.md` for personal use and `.claude/skills/<skill-name>/SKILL.md` for project use.
+Claude Code installs agent skills through plugins. Add the `zjctl` marketplace from inside Claude Code, then install the plugin:
 
-Personal install:
-
-```bash
-mkdir -p ~/.claude/skills
-unzip -o skills/dist/zjctl.skill -d ~/.claude/skills
+```text
+/plugin marketplace add mrmans0n/zjctl
+/plugin install zjctl@mrmans0n-zjctl
 ```
 
-Project install:
+For a repository-shared install, use the Claude Code CLI with project scope:
 
 ```bash
-mkdir -p .claude/skills
-unzip -o skills/dist/zjctl.skill -d .claude/skills
-git add .claude/skills/zjctl/SKILL.md
+claude plugin install zjctl@mrmans0n-zjctl --scope project
 ```
 
 ### Codex
 
-Codex loads user skills from `$CODEX_HOME/skills`; when `CODEX_HOME` is unset, use `~/.codex/skills`.
+Install with the open Agent Skills CLI:
 
 ```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-mkdir -p "$CODEX_HOME/skills"
-unzip -o skills/dist/zjctl.skill -d "$CODEX_HOME/skills"
+npx skills add mrmans0n/zjctl --skill zjctl --agent codex
 ```
 
-For a repository-shared Codex setup, commit the skill source under the target repo and reference it from `AGENTS.md` so the harness advertises it to agents:
+Add `--global` to install into your user Codex skills directory instead of the current project:
 
 ```bash
-mkdir -p skills
-unzip -o skills/dist/zjctl.skill -d skills
-git add skills/zjctl/SKILL.md AGENTS.md
+npx skills add mrmans0n/zjctl --skill zjctl --agent codex --global
 ```
 
 ### Cursor
 
-Cursor loads skills from `~/.cursor/skills/<skill-name>/SKILL.md` for personal use and `.cursor/skills/<skill-name>/SKILL.md` for project use.
-
-Personal install:
+Install with the open Agent Skills CLI:
 
 ```bash
-mkdir -p ~/.cursor/skills
-unzip -o skills/dist/zjctl.skill -d ~/.cursor/skills
+npx skills add mrmans0n/zjctl --skill zjctl --agent cursor
 ```
 
-Project install:
+Add `--global` to install into your user Cursor skills directory instead of the current project:
 
 ```bash
-mkdir -p .cursor/skills
-unzip -o skills/dist/zjctl.skill -d .cursor/skills
-git add .cursor/skills/zjctl/SKILL.md
+npx skills add mrmans0n/zjctl --skill zjctl --agent cursor --global
 ```
 
 ## Documentation
