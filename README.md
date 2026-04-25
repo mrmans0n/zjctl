@@ -61,8 +61,12 @@ Releases are automated through GitHub Actions using [cargo-dist](https://github.
 1. **Before tagging:**
    - Ensure `CHANGELOG.md` is updated with the new version
    - Ensure version in `Cargo.toml` matches the tag you will push
-   - Run `cargo test` and `cargo clippy -- -D warnings`
+   - Run `cargo fmt --all -- --check`
+   - Run `cargo clippy --all-targets --all-features -- -D warnings`
+   - Run `cargo test --all-features`
+   - Run `cargo build --release`
    - Verify `dist plan` output looks correct
+   - Follow the full [release preflight checklist](docs/RELEASE-PREFLIGHT.md)
 
 2. **Create and push the tag:**
    ```bash

@@ -27,6 +27,8 @@ All must pass.
 dist plan
 ```
 
+This is a local, non-publishing dry run. It must not create a git tag, push a tag, create a GitHub Release, or publish the Homebrew formula.
+
 Check that:
 - [ ] The version shown matches the intended release
 - [ ] All four targets are listed:
