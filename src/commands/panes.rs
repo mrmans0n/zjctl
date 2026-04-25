@@ -2,7 +2,7 @@ use crate::cli::PanesVerb;
 use crate::error::ZjctlError;
 use crate::identity::{resolve_pane, resolve_tab};
 use crate::models::{Pane, PaneContent, PanesOutput, ZellijPaneInfo};
-use crate::output::{emit, emit_dry_run, emit_ok, OutputFormat};
+use crate::output::{OutputFormat, emit, emit_dry_run, emit_ok};
 use crate::safety::check_self_write;
 use crate::zellij::ZellijRunner;
 

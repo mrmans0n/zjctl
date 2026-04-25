@@ -17,7 +17,7 @@ Provides a structured interface for AI agents to interact with Zellij terminal m
 Build and install the binary to Cargo's bin directory:
 
 ```bash
-cargo install --path scripts/zjctl-rs
+cargo install --path .
 ```
 
 Verify the install:
@@ -32,8 +32,8 @@ zjctl --help
 If you prefer not to use `cargo install`:
 
 ```bash
-cargo build --release --manifest-path scripts/zjctl-rs/Cargo.toml
-ln -sf "$(pwd)/scripts/zjctl-rs/target/release/zjctl" /usr/local/bin/zjctl
+cargo build --release
+ln -sf "$(pwd)/target/release/zjctl" /usr/local/bin/zjctl
 ```
 
 ## Package the Skill
@@ -153,7 +153,7 @@ Expected: `content` field includes `zjctl-skill-ok`.
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `zjctl: command not found` | Binary not on `$PATH` | Run `cargo install --path scripts/zjctl-rs` from the repository root |
+| `zjctl: command not found` | Binary not on `$PATH` | Run `cargo install --path .` from the repository root |
 | `not_in_session` (exit 4) | No Zellij session detected | Run from inside a Zellij session, or use `--session <name>` |
 | `self_write_blocked` (exit 3) | Targeting your own pane | Pick a different pane, or use `--no-guard` if intentional |
 | `invalid_target` (exit 1) | Pane/tab ID doesn't exist | Run `zjctl panes list` to find valid IDs |

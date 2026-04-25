@@ -1,197 +1,57 @@
-use std::ffi::OsString;
-use std::process::Command;
+use clap::Parser;
+use zjctl::cli::{Cli, Resource};
+use zjctl::commands;
+use zjctl::error::ZjctlError;
+use zjctl::output::OutputFormat;
+use zjctl::zellij::RealZellij;
 
-use anyhow::{Context, Result, bail};
-use clap::{Args, Parser, Subcommand};
+fn run(cli: Cli) -> Result<(), ZjctlError> {
+    let format = if cli.quiet {
+        OutputFormat::Quiet
+    } else {
+        cli.format
+    };
 
-#[derive(Parser, Debug)]
-#[command(name = "zjctl")]
-#[command(about = "Agent-friendly programmatic control for Zellij")]
-struct Cli {
-    /// Optional Zellij session name to target.
-    #[arg(long, global = true)]
-    session: Option<String>,
-    #[command(subcommand)]
-    command: Commands,
-}
+    let session = cli
+        .session
+        .or_else(|| std::env::var("ZELLIJ_SESSION_NAME").ok());
 
-#[derive(Subcommand, Debug)]
-enum Commands {
-    /// List panes as JSON.
-    Panes(PanesCommand),
-    /// List tabs as JSON.
-    Tabs(TabsCommand),
-    /// Read pane output.
-    Read(ReadCommand),
-    /// Write text to a pane.
-    Write(WriteCommand),
-}
+    let zellij = RealZellij {
+        session: session.clone(),
+    };
 
-#[derive(Args, Debug)]
-struct PanesCommand {
-    #[command(subcommand)]
-    command: PanesSubcommand,
-}
-
-#[derive(Subcommand, Debug)]
-enum PanesSubcommand {
-    /// List panes.
-    List,
-}
-
-#[derive(Args, Debug)]
-struct TabsCommand {
-    #[command(subcommand)]
-    command: TabsSubcommand,
-}
-
-#[derive(Subcommand, Debug)]
-enum TabsSubcommand {
-    /// List tabs.
-    List,
-}
-
-#[derive(Args, Debug)]
-struct ReadCommand {
-    /// Pane ID, eg. terminal_2 or 2.
-    #[arg(long)]
-    pane: String,
-    /// Include full scrollback.
-    #[arg(long)]
-    full: bool,
-    /// Preserve ANSI escape codes.
-    #[arg(long)]
-    ansi: bool,
-}
-
-#[derive(Args, Debug)]
-struct WriteCommand {
-    /// Pane ID, eg. terminal_2 or 2.
-    #[arg(long)]
-    pane: String,
-    /// Text to paste into the pane.
-    #[arg(long)]
-    text: String,
-    /// Send Enter after pasting text.
-    #[arg(long)]
-    enter: bool,
-}
-
-fn main() {
-    if let Err(error) = run() {
-        eprintln!("error: {error:#}");
-        std::process::exit(1);
-    }
-}
-
-fn run() -> Result<()> {
-    let cli = Cli::parse();
-
-    match cli.command {
-        Commands::Panes(command) => match command.command {
-            PanesSubcommand::List => {
-                run_zellij(cli.session.as_deref(), &["action", "list-panes", "--json"])
-            }
-        },
-        Commands::Tabs(command) => match command.command {
-            TabsSubcommand::List => {
-                run_zellij(cli.session.as_deref(), &["action", "list-tabs", "--json"])
-            }
-        },
-        Commands::Read(command) => {
-            let mut args = vec![
-                OsString::from("action"),
-                OsString::from("dump-screen"),
-                OsString::from("--pane-id"),
-                OsString::from(command.pane),
-            ];
-            if command.full {
-                args.push(OsString::from("--full"));
-            }
-            if command.ansi {
-                args.push(OsString::from("--ansi"));
-            }
-            run_zellij_os(cli.session.as_deref(), &args)
+    match cli.resource {
+        Resource::Sessions { verb } => commands::sessions::run(verb, &zellij, &format),
+        Resource::Tabs { verb } => {
+            require_session(&session)?;
+            commands::tabs::run(verb, &zellij, &format, cli.dry_run)
         }
-        Commands::Write(command) => {
-            run_zellij_os(
-                cli.session.as_deref(),
-                &[
-                    OsString::from("action"),
-                    OsString::from("paste"),
-                    OsString::from("--pane-id"),
-                    OsString::from(command.pane.clone()),
-                    OsString::from(command.text),
-                ],
-            )?;
-            if command.enter {
-                run_zellij_os(
-                    cli.session.as_deref(),
-                    &[
-                        OsString::from("action"),
-                        OsString::from("send-keys"),
-                        OsString::from("--pane-id"),
-                        OsString::from(command.pane),
-                        OsString::from("Enter"),
-                    ],
-                )?;
-            }
-            Ok(())
+        Resource::Panes { verb } => {
+            require_session(&session)?;
+            let current_pane_id = std::env::var("ZELLIJ_PANE_ID").ok();
+            commands::panes::run(
+                verb,
+                &zellij,
+                &format,
+                cli.dry_run,
+                cli.no_guard,
+                current_pane_id.as_deref(),
+            )
         }
     }
 }
 
-fn run_zellij(session: Option<&str>, args: &[&str]) -> Result<()> {
-    let args = args.iter().map(OsString::from).collect::<Vec<_>>();
-    run_zellij_os(session, &args)
-}
-
-fn run_zellij_os(session: Option<&str>, args: &[OsString]) -> Result<()> {
-    let mut command = Command::new("zellij");
-    if let Some(session_name) = session {
-        command.arg("--session").arg(session_name);
-    }
-    command.args(args);
-
-    let status = command.status().with_context(|| {
-        format!(
-            "failed to launch zellij with args {}",
-            format_args_for_error(args)
-        )
-    })?;
-
-    if !status.success() {
-        bail!(
-            "zellij exited with status {status} while running {}",
-            format_args_for_error(args)
-        );
+fn require_session(session: &Option<String>) -> Result<(), ZjctlError> {
+    if session.is_none() {
+        return Err(ZjctlError::not_in_session());
     }
     Ok(())
 }
 
-fn format_args_for_error(args: &[OsString]) -> String {
-    args.iter()
-        .map(|arg| arg.to_string_lossy().into_owned())
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn formats_args_for_error_messages() {
-        let args = vec![
-            OsString::from("action"),
-            OsString::from("dump-screen"),
-            OsString::from("--pane-id"),
-            OsString::from("terminal_2"),
-        ];
-        assert_eq!(
-            format_args_for_error(&args),
-            "action dump-screen --pane-id terminal_2"
-        );
+fn main() {
+    let cli = Cli::parse();
+    if let Err(e) = run(cli) {
+        eprintln!("{}", e.to_json());
+        std::process::exit(e.exit_code);
     }
 }
