@@ -1,7 +1,7 @@
 use crate::cli::SessionsVerb;
 use crate::error::ZjctlError;
 use crate::models::{Session, SessionsOutput};
-use crate::output::{emit, OutputFormat};
+use crate::output::{OutputFormat, emit};
 use crate::zellij::ZellijRunner;
 
 pub fn run(

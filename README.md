@@ -11,14 +11,20 @@ It is designed as a thin, agent-friendly wrapper around Zellij's native CLI so t
 
 ## Status
 
-Early bootstrap.
+Early, usable CLI.
 
-The initial version already includes a small usable control surface:
+The current control surface includes:
 
+- `zjctl sessions list`
 - `zjctl panes list`
 - `zjctl tabs list`
-- `zjctl read --pane <pane>`
-- `zjctl write --pane <pane> --text <text> [--enter]`
+- `zjctl panes read <pane>`
+- `zjctl panes write <pane> <text>`
+- `zjctl panes send-keys <pane> <keys...>`
+- `zjctl panes focus <pane>`
+- `zjctl panes open [options] [-- COMMAND...]`
+- `zjctl tabs focus <tab>`
+- `zjctl tabs open [options] [-- COMMAND...]`
 
 ## Why
 
@@ -45,11 +51,23 @@ cargo install --path .
 
 ## Development
 
+The Rust crate lives at the repository root, using standard Cargo layout:
+
+- `src/` contains the library and binary source.
+- `tests/` contains integration tests.
+- `skills/` contains the optional agent skill package.
+
 ```bash
 cargo fmt --all
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo run -- panes list
+```
+
+For a local install from a checkout:
+
+```bash
+cargo install --path .
 ```
 
 ## Release

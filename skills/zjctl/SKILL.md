@@ -29,9 +29,9 @@ Before using `zjctl` in a fresh session:
    ```bash
    zjctl --help
    ```
-2. If not on `$PATH`, install the canonical subcrate from the [zjctl repository](https://github.com/mrmans0n/zjctl):
+2. If not on `$PATH`, install the canonical root crate from the [zjctl repository](https://github.com/mrmans0n/zjctl):
    ```bash
-   git clone https://github.com/mrmans0n/zjctl /tmp/zjctl && cargo install --path /tmp/zjctl/scripts/zjctl-rs
+   git clone https://github.com/mrmans0n/zjctl /tmp/zjctl && cargo install --path /tmp/zjctl
    ```
 3. Do not assume old flags or commands still exist — verify against `--help` output.
 

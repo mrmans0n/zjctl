@@ -1,6 +1,6 @@
 mod common;
 
-use common::{MockZellij, MOCK_PANES_JSON, MOCK_TAB_NAMES};
+use common::{MOCK_PANES_JSON, MOCK_TAB_NAMES, MockZellij};
 use zjctl::commands::panes::{self, OpenPaneOptions};
 use zjctl::output::OutputFormat;
 

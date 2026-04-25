@@ -4,7 +4,7 @@ use crate::cli::TabsVerb;
 use crate::error::ZjctlError;
 use crate::identity::resolve_tab;
 use crate::models::{Tab, TabsOutput, ZellijPaneInfo, ZellijTabInfo};
-use crate::output::{emit, emit_dry_run, emit_ok, OutputFormat};
+use crate::output::{OutputFormat, emit, emit_dry_run, emit_ok};
 use crate::zellij::ZellijRunner;
 
 pub fn run(
